@@ -1,0 +1,5 @@
+"""
+SentinelNet: Network Traffic Analysis and Anomaly Detection System
+"""
+
+__version__ = "1.0.0"

@@ -1,0 +1,76 @@
+# SentinelNet - Network Traffic Analysis & Anomaly Detection System
+# Configuration File
+
+app:
+  name: "SentinelNet"
+  version: "1.0.0"
+  tagline: "Network Traffic Analysis & Anomaly Detection System"
+  theme: "dark"
+  default_page: "Overview"
+
+database:
+  db_path: "data/network_security.db"
+
+capture:
+  default_duration_sec: 20
+  default_packet_limit: 1000
+  buffer_size: 5000
+  bpf_filter: ""
+
+rules:
+  port_scan:
+    min_unique_ports: 10
+    window_seconds: 10
+    severity: "High"
+    description: "Rapid connections to multiple destination ports from a single source IP"
+    recommended_action: "Inspect source host for port scanning utility or compromise; block source IP if unapproved."
+
+  traffic_spike:
+    packet_rate_threshold: 40.0   # packets / sec
+    byte_rate_threshold: 50000.0  # bytes / sec
+    severity: "Medium"
+    description: "Abnormal surge in packet count or byte volume within a short time window"
+    recommended_action: "Investigate whether traffic surge is legitimate large download/sync or volumetric denial of service."
+
+  syn_flood:
+    min_syn_packets: 15
+    syn_ratio_threshold: 0.70     # 70% or more packets are TCP SYN
+    severity: "Critical"
+    description: "Excessive TCP SYN flags with abnormal completion ratio indicating potential SYN flood or sweep"
+    recommended_action: "Enable SYN cookies, limit SYN rate on firewall, inspect host for automated attack script."
+
+  repeated_connections:
+    min_attempts_to_same_dest: 20
+    window_seconds: 10
+    severity: "Medium"
+    description: "Repetitive connection attempts to the exact same destination host and port"
+    recommended_action: "Check for brute-force attacks, C2 beaconing, or aggressive service polling."
+
+  unusual_destinations:
+    min_unique_dst_ips: 15
+    window_seconds: 10
+    severity: "High"
+    description: "Single host initiating contacts with an unusually large number of distinct remote IPs"
+    recommended_action: "Check host for worm-like lateral movement, botnet rendezvous, or external reconnaissance."
+
+ml:
+  algorithm: "IsolationForest"
+  default_contamination: 0.06
+  n_estimators: 100
+  max_samples: "auto"
+  random_state: 42
+  min_records_for_training: 15
+
+features:
+  numeric_features:
+    - "packet_size"
+    - "packet_count_in_window"
+    - "byte_count_in_window"
+    - "packet_rate"
+    - "byte_rate"
+    - "syn_flag_count"
+    - "syn_ratio"
+    - "unique_dst_ports"
+    - "unique_dst_ips"
+  categorical_features:
+    - "protocol"
